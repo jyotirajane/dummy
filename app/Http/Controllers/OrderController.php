@@ -8,6 +8,8 @@ use App\Imports\OrderImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Storage;
 use File;
+use DB;
+use App\Export\OrderExport;
 
 class OrderController extends Controller
 {
@@ -28,7 +30,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        return view('orders',);
+        return view('orders');
     }
 
 
@@ -57,6 +59,14 @@ class OrderController extends Controller
     public function loadOrdersJSON(Request $request)
     {
         return datatables()->of(Orders::all())->toArray();
+    }
+
+
+    public function orderSummary(Request $request)
+    {
+        $data = Orders::select('Item_Name', 'First_Name_Billing',DB::raw('SUM(Item_Cost) as item_cost'), DB::raw('SUM(Quantity) as items'))->groupBy(['Item_Name', 'First_Name_Billing'])->get()->toArray();
+        $keys = array_keys($data[0]);
+        return Excel::download(new OrderExport(array_prepend($data, $keys)), 'order.xlsx');
     }
 
 }

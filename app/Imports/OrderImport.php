@@ -14,6 +14,11 @@ class OrderImport implements ToModel, WithHeadingRow
     {
         //echo '<pre>'; print_r($array); exit;
         $conditions = [
+            'Order_Number' => $array['order_number'],
+            'Item_Sr_No' => $array['item'],
+            'Item_Name' => $array['item_name']
+        ];
+        $update = [
             'Building_Name' => $array['building_name'],
             'Order_Number' => $array['order_number'],
             'Order_Status' => $array['order_status'],
@@ -57,7 +62,7 @@ class OrderImport implements ToModel, WithHeadingRow
         ];
         Orders::updateOrCreate(
             $conditions,
-            $conditions
+            $update
         );
     }
 
