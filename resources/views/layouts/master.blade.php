@@ -63,12 +63,12 @@
                                     <p>Reports</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a href="{{ url('/users')}}" class="nav-link">
                                     <i class="nav-icon fas fa-user"></i>
                                     <p>Users</p>
                                 </a>
-                            </li>
+                            </li> -->
                             <li class="nav-item">
                                 <a class="nav-link" onclick="event.preventDefault();
                                                  document.getElementById('logout-form').submit();">
