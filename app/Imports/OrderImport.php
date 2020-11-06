@@ -14,13 +14,12 @@ class OrderImport implements ToModel, WithHeadingRow
     {
         //echo '<pre>'; print_r($array); exit;
         $conditions = [
-            'Order_Number' => $array['order_number'],
-            'Item_Sr_No' => $array['item'],
-            'Item_Name' => $array['item_name']
+        'Order_Number' => $array['order_number'],
+        'Item_Name' => $array['item_name']
         ];
-        $update = [
+
+        $data = [
             'Building_Name' => $array['building_name'],
-            'Order_Number' => $array['order_number'],
             'Order_Status' => $array['order_status'],
             'Order_Date' => $array['order_date'],
             'Customer_Note' => $array['customer_note'],
@@ -53,7 +52,6 @@ class OrderImport implements ToModel, WithHeadingRow
             'Order_Total_Tax_Amount' => $array['order_total_tax_amount'],
             'SKU' => $array['sku'],
             'Item_Sr_No' => $array['item'],
-            'Item_Name' => $array['item_name'],
             'Quantity' => $array['quantity'],
             'Item_Cost' => $array['item_cost'],
             'Coupon_Code' => $array['coupon_code'],
@@ -61,8 +59,11 @@ class OrderImport implements ToModel, WithHeadingRow
             'Discount_Amount_Tax' => $array['discount_amount_tax'],
         ];
         Orders::updateOrCreate(
-            $conditions,
-            $update
+            [
+        'Order_Number' => $array['order_number'],
+        'Item_Name' => $array['item_name']
+        ],
+            $data
         );
     }
 

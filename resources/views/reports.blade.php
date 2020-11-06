@@ -8,28 +8,24 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0 text-dark">Orders</h1>
+                    <h1 class="m-0 text-dark">Reports</h1>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <section class="content" style="padding-left: 150px">
-    <div class="row"><a class="btn btn-warning" href="{{ url('/orders/download') }}">Export Orders</a></div><br />
+    <div class="row"><a class="btn btn-warning" href="{{ url('/reports/summary_download') }}">Export Order Summary</a></div><br />
     <div class="row">
         <div class="col-xs-12">
             <div class="box">
                 <div class="box-body table-responsive no-padding">
-                    <table class="table table-hover" id="orders">
+                    <table class="table table-hover" id="reports">
                         <thead>
                             <tr>
                                 <th>Building Name</th>
-                                <th>Order Number</th>
-                                <th>Order Status</th>
-                                <th>Customer Note</th>
-                                <th>First Name Billing</th>
-                                <th>Last Name Billing</th>
-                                <th>Company Billing</th>
+                                <th>Order Count</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                     </table>
@@ -44,11 +40,12 @@
 @section('scripts')
 <script src="{{ url('/plugins/datatables/jquery.dataTables.js') }}"></script>
 <script type="text/javascript">
+
     $(document).ready(function() {
-        $('#orders').DataTable( {
+        $('#reports').DataTable( {
             "processing": true,
             "serverSide": true,
-            "ajax": "ajax/orders/json",
+            "ajax": "ajax/reports/json",
             "buttons": [
             'copyHtml5',
             'excelHtml5',
@@ -57,14 +54,11 @@
         ],
             "columns": [
                 {"data":"Building_Name"},
-                {"data":"Order_Number"},
-                {"data":"Order_Status"},
-                {"data":"Customer_Note"},
-                {"data":"First_Name_Billing"},
-                {"data":"Last_Name_Billing"},
-                {"data":"Company_Billing"},
+                {"data":"no_of_orders"},
+                {"data": "action", "orderable": false, "searchable": false},
             ]
         });
     });
+
 </script>
 @endsection
