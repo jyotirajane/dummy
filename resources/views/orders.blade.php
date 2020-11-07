@@ -32,9 +32,36 @@
     </div>
 </div>
 <section class="content" style="padding-left: 20px">
-    <!-- <div class="row"><a class="btn btn-warning" href="{{ url('/orders/download') }}">Export Orders</a></div><br /> -->
     <div class="row">
-        <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target=".bs-example-modal-lg">Filters</button>
+        <div class="col-md-12">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label>Order Date Range</label>
+                        <div class="input-group date">
+                            <input type="text" class="form-control pull-right" id="order_date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form method="POST" action="{{ url('/orders/download') }}">
+            @csrf
+            <input type="hidden" name="start" id="start" value="">
+            <input type="hidden" name="end" id="end" value="">
+            <div class="form-group">
+                <label>Export Data With Date Range?</label>
+                <select class="form-control" name="export_with_date">
+                    <option value="yes">With Date Range</option>
+                    <option value="no">Without Date Range</option>
+                </select>
+            </div>
+            <button type="Submit" class="btn btn-warning">Export Orders</button>
+            </form>
+        </div>
     </div>
     <br/>
     <div class="row">
@@ -58,51 +85,6 @@
                 <!-- /.box-body -->
             </div>
             <!-- /.box -->
-        </div>
-    </div>
-    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myLargeModalLabel">Filters</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="box box-primary">
-                                <div class="box-body">
-                                    <div class="form-group">
-                                        <label>Order Date Range</label>
-                                        <div class="input-group date">
-                                            <div class="input-group-addon">
-                                                <i class="fa fa-calendar"></i>
-                                            </div>
-                                            <input type="text" class="form-control pull-right" id="order_date">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <form method="POST" action="{{ url('/orders/download') }}">
-                            @csrf
-                            <input type="hidden" name="start" id="start" value="">
-                            <input type="hidden" name="end" id="end" value="">
-                            <div class="form-group">
-                                <label>Export Data With Date Range?</label>
-                                <select class="form-control" name="export_with_date">
-                                    <option value="yes">With Date Range</option>
-                                    <option value="no">Without Date Range</option>
-                                </select>
-                            </div>
-                            <button type="Submit" class="btn btn-warning">Export Orders</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
@@ -142,7 +124,6 @@
         }, function(start, end, label) {
             $('#start').val(start.format('YYYY-MM-DD'));
             $('#end').val(end.format('YYYY-MM-DD'));
-            $('.bs-example-modal-lg').modal('hide');
             $('#orders').DataTable({
                 "destroy":true,
                 "processing": true,
