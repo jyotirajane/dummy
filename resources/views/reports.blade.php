@@ -47,11 +47,11 @@
             "serverSide": true,
             "ajax": "ajax/reports/json",
             "buttons": [
-            'copyHtml5',
-            'excelHtml5',
-            'csvHtml5',
-            'pdfHtml5'
-        ],
+                'copyHtml5',
+                'excelHtml5',
+                'csvHtml5',
+                'pdfHtml5'
+            ],
             "columns": [
                 {"data":"Building_Name"},
                 {"data":"no_of_orders"},

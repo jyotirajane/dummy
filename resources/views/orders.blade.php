@@ -14,7 +14,7 @@
         </div>
     </div>
 </div>
-<section class="content" style="padding-left: 150px">
+<section class="content" style="padding-left: 20px">
     <div class="row"><a class="btn btn-warning" href="{{ url('/orders/download') }}">Export Orders</a></div><br />
     <div class="row">
         <div class="col-xs-12">
