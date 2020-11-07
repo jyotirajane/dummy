@@ -6,22 +6,22 @@ use App\Orders;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use \PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class OrderImport implements ToModel, WithHeadingRow
 {
 
     public function model(array $array)
     {
-        //echo '<pre>'; print_r($array); exit;
         $conditions = [
-        'Order_Number' => $array['order_number'],
-        'Item_Name' => $array['item_name']
+            'Order_Number' => $array['order_number'],
+            'Item_Name' => $array['item_name']
         ];
 
         $data = [
             'Building_Name' => $array['building_name'],
             'Order_Status' => $array['order_status'],
-            'Order_Date' => $array['order_date'],
+            'Order_Date' => Date::excelToDateTimeObject($array['order_date'])->format('Y-m-d h:i:s'),
             'Customer_Note' => $array['customer_note'],
             'First_Name_Billing' => $array['first_name_billing'],
             'Last_Name_Billing' => $array['last_name_billing'],
@@ -59,10 +59,7 @@ class OrderImport implements ToModel, WithHeadingRow
             'Discount_Amount_Tax' => $array['discount_amount_tax'],
         ];
         Orders::updateOrCreate(
-            [
-        'Order_Number' => $array['order_number'],
-        'Item_Name' => $array['item_name']
-        ],
+            $conditions,
             $data
         );
     }

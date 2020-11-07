@@ -25,7 +25,7 @@ Route::get('/orders', 'OrderController@index');
 Route::get('/orders/upload', 'OrderController@uploadScreen');
 Route::post('/orders/upload', 'OrderController@postUpload');
 Route::get('/ajax/orders/json', 'OrderController@loadOrdersJSON');
-Route::get('/orders/download', 'OrderController@export_order');
+Route::post('/orders/download', 'OrderController@export_order');
 Route::get('/reports/summary_download', 'OrderController@export_summary');
 Route::post('/reports/building_summary/download', 'OrderController@export_building_summary');
 Route::get('/reports', 'OrderController@reports');

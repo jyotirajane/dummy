@@ -82,6 +82,9 @@ class OrderController extends Controller
 
     public function loadOrdersJSON(Request $request)
     {
+        if($request->has('start_date') || $request->has('end_date')){
+            return datatables()->of(Orders::whereBetween('Order_Date', [$request->get('start_date'), $request->get('end_date')])->get())->toArray();
+        }
         return datatables()->of(Orders::all())->toArray();
     }
 
