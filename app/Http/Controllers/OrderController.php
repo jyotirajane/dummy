@@ -90,10 +90,16 @@ class OrderController extends Controller
 
     public function export_order(Request $request)
     {
-        //return Excel::download(new OrdersExport, 'orders.xlsx');
-
+        if($request->has('export_with_date') && $request->get('export_with_date') == 'yes'){
+            $orders = Orders::whereBetween('Order_Date', [$request->get('start'), $request->get('end')])->get()->toArray();
+            $keys = array_keys($orders[0]);
+            $final = array_prepend($orders, $keys);
+            return Excel::download(new OrdersExport($final), 'orders.xlsx');
+        }
         $orders= Orders::all()->toArray();
-        return Excel::download(new OrdersExport($orders), 'orders.xlsx');
+        $keys = array_keys($orders[0]);
+        $final = array_prepend($orders, $keys);
+        return Excel::download(new OrdersExport($final), 'orders.xlsx');
     }
 
     public function export_summary(Request $request)

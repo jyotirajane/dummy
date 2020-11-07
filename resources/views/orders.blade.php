@@ -85,12 +85,21 @@
                         </div>
                     </div>
                     <div class="row">
-                        <form method="POST" action="{{ url('/orders/download') }}">
-                        @csrf
-                        <input type="hidden" name="date_range" id="start" value="">
-                        <input type="hidden" name="date_range" id="end" value="">
-                        <button type="Submit" class="btn btn-warning">Export Orders</button>
-                        </form>
+                        <div class="col-md-12">
+                            <form method="POST" action="{{ url('/orders/download') }}">
+                            @csrf
+                            <input type="hidden" name="start" id="start" value="">
+                            <input type="hidden" name="end" id="end" value="">
+                            <div class="form-group">
+                                <label>Export Data With Date Range?</label>
+                                <select class="form-control" name="export_with_date">
+                                    <option value="yes">With Date Range</option>
+                                    <option value="no">Without Date Range</option>
+                                </select>
+                            </div>
+                            <button type="Submit" class="btn btn-warning">Export Orders</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -103,16 +112,17 @@
 <script src="{{ url('/plugins/daterangepicker/daterangepicker.js') }}"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#orders').DataTable( {
+        $('#orders').DataTable({
+            "destroy":true,
             "processing": true,
             "serverSide": true,
             "ajax": "ajax/orders/json",
             "buttons": [
-            'copyHtml5',
-            'excelHtml5',
-            'csvHtml5',
-            'pdfHtml5'
-        ],
+                'copyHtml5',
+                'excelHtml5',
+                'csvHtml5',
+                'pdfHtml5'
+            ],
             "columns": [
                 {"data":"Building_Name"},
                 {"data":"Order_Number"},
@@ -123,6 +133,7 @@
                 {"data":"Company_Billing"},
             ]
         });
+        $('#order_date').val('');
         $('#order_date').daterangepicker({
             opens: 'center',
             locale: {
@@ -131,7 +142,9 @@
         }, function(start, end, label) {
             $('#start').val(start.format('YYYY-MM-DD'));
             $('#end').val(end.format('YYYY-MM-DD'));
-            $('#orders').DataTable( {
+            $('.bs-example-modal-lg').modal('hide');
+            $('#orders').DataTable({
+                "destroy":true,
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
