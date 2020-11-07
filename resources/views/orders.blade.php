@@ -31,9 +31,13 @@
         </div>
     </div>
 </div>
-<section class="content" style="padding-left: 20px">
+<div class="container">
+<section class="content">
+    @if(Session::has('message'))
+    <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{ Session::get('message') }}</p>
+    @endif
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <div class="box box-primary">
                 <div class="box-body">
                     <div class="form-group">
@@ -47,7 +51,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <form method="POST" action="{{ url('/orders/download') }}">
             @csrf
             <input type="hidden" name="start" id="start" value="">
@@ -74,10 +78,12 @@
                                 <th>Building Name</th>
                                 <th>Order Number</th>
                                 <th>Order Status</th>
-                                <th>Customer Note</th>
+                                <th>Order Date</th>
                                 <th>First Name Billing</th>
                                 <th>Last Name Billing</th>
-                                <th>Company Billing</th>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Item Cost</th>
                             </tr>
                         </thead>
                     </table>
@@ -87,7 +93,9 @@
             <!-- /.box -->
         </div>
     </div>
+
 </section>
+</div>
 @endsection
 @section('scripts')
 <script src="{{ url('/plugins/datatables/jquery.dataTables.js') }}"></script>
@@ -98,6 +106,7 @@
             "destroy":true,
             "processing": true,
             "serverSide": true,
+            "pageLength": 50,
             "ajax": "ajax/orders/json",
             "buttons": [
                 'copyHtml5',
@@ -109,10 +118,12 @@
                 {"data":"Building_Name"},
                 {"data":"Order_Number"},
                 {"data":"Order_Status"},
-                {"data":"Customer_Note"},
+                {"data":"Order_Date"},
                 {"data":"First_Name_Billing"},
                 {"data":"Last_Name_Billing"},
-                {"data":"Company_Billing"},
+                {"data":"Item_Name"},
+                {"data":"Quantity"},
+                {"data":"Item_Cost"},
             ]
         });
         $('#order_date').val('');
@@ -128,6 +139,7 @@
                 "destroy":true,
                 "processing": true,
                 "serverSide": true,
+                "pageLength": 50,
                 "ajax": {
                     "url": "ajax/orders/json",
                     "data": {
@@ -145,10 +157,12 @@
                     {"data":"Building_Name"},
                     {"data":"Order_Number"},
                     {"data":"Order_Status"},
-                    {"data":"Customer_Note"},
+                    {"data":"Order_Date"},
                     {"data":"First_Name_Billing"},
                     {"data":"Last_Name_Billing"},
-                    {"data":"Company_Billing"},
+                    {"data":"Item_Name"},
+                    {"data":"Quantity"},
+                    {"data":"Item_Cost"},
                 ]
             });
         });

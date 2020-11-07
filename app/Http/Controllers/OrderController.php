@@ -9,6 +9,7 @@ use App\Export\OrdersExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Collection;
 use App\Helpers\CustomHelper;
+use Illuminate\Support\Facades\Validator;
 use Storage;
 use File;
 
@@ -43,6 +44,7 @@ class OrderController extends Controller
 
     public function postUpload(Request $request)
     {
+        try {
         $path = $request->file('orders');
         $filename = $path->getClientOriginalName();
         $uploads = storage_path() . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
@@ -53,27 +55,13 @@ class OrderController extends Controller
         $filemove = storage_path() . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $filename;
         Excel::import(new OrderImport, $filemove);
 
+        \Session::flash('message', 'Orders uploaded successfully!'); 
+                \Session::flash('alert-class', 'alert-success'); 
 
-        // try {
-        //     Excel::load($filemove, function ($reader) {
-
-        //         foreach ($reader->toArray() as $row) {
-        //         Orders::updateOrCreate(
-        //                 [
-        //             'Order_Number' => $row['order_number'],
-        //             'Item_Name' => $row['item_name']
-        //             ],
-        //                 $row
-        //             );
-        //         }
-        //     });
-        //     \Session::flash('success', 'Orders uploaded successfully.');
-        //  return redirect(route('orders'));
-        // } catch (\Exception $e) {
-        //     \Session::flash('error', $e->getMessage());
-        //     return redirect(route('orders'));
-        // }
-
+        } catch (Exception $e) {
+                \Session::flash('message', 'Orders could not uploaded. Error occured!'); 
+                \Session::flash('alert-class', 'alert-danger'); 
+    }
         return redirect('orders');
 
     }
@@ -104,9 +92,30 @@ class OrderController extends Controller
 
     public function export_summary(Request $request)
     {
-        $data = Orders::select('Item_Name', 'Building_Name',\DB::raw('SUM(Quantity) as items'))->groupBy(['Item_Name', 'Building_Name'])->get();
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ]);
 
+        if ($validator->fails()) {
+            return redirect('/reports')
+                        ->withErrors($validator)
+                        ->withInput();
+        }
 
+        if($request->has('report_start_date') && $request->get('report_start_date')!==null)
+        {
+         
+        $data = Orders::select('Item_Name', 'Building_Name',\DB::raw('SUM(Quantity) as items'))
+                ->whereBetween('Order_Date', [$request->get('summary_start'), $request->get('summary_end')])
+                ->groupBy(['Item_Name', 'Building_Name'])->get();
+            }
+            else
+            {
+                $data = Orders::select('Item_Name', 'Building_Name',\DB::raw('SUM(Quantity) as items'))
+            ->groupBy(['Item_Name', 'Building_Name'])->get();
+            }
+        $summary_file_name= $request->get('report_start_date').'To'.$request->get('report_end_date').'_order_summary.xlsx';
         $transpose_data=[];
         $keys=['Building_Name'];
         foreach($data as $row) {
@@ -128,7 +137,7 @@ class OrderController extends Controller
             }
             $final_data[]=$row_data;
         }
-        return Excel::download(new OrdersExport(array_prepend($final_data, $keys)), 'order_summary.xlsx');
+        return Excel::download(new OrdersExport(array_prepend($final_data, $keys)), $summary_file_name);
     }
 
     public function export_filtered_summary(Request $request)
@@ -145,8 +154,8 @@ class OrderController extends Controller
 
     public function loadReportsJSON(Request $request)
     {
-        $f_s_date = $request->input('startDate');
-        $f_e_date = $request->input('endDate');
+        $f_s_date = $request->input('start_date');
+        $f_e_date = $request->input('end_date');
 
         $sql_query = "select count(*)as no_of_orders, Building_Name from orders";
         $sql_query.= " Where 1=1 ";
@@ -162,8 +171,11 @@ class OrderController extends Controller
         $results = \DB::select(\DB::raw("$sql_query") );
         return datatables()->of($results)
             ->addIndexColumn()
-            ->addColumn('action', function($row){
-                $btn = "<form method='POST' action='".url('reports/building_summary/download')."'><input type='hidden' value='".$row->Building_Name."' name='building'/><input type='hidden' name='_token' value='".csrf_token()."'/><input type='Submit' value='Download Report' class='edit btn btn-primary btn-sm'/></form>";
+            ->addColumn('action', function($row) use($f_s_date,$f_e_date){
+                $btn = "<form method='POST' action='".url('reports/building_summary/download')."'><input type='hidden' value='".$row->Building_Name."' name='building'/>
+                <input type='hidden' value='".$f_s_date."' name='start'/>
+                <input type='hidden' value='".$f_e_date."' name='end'/>
+                <input type='hidden' name='_token' value='".csrf_token()."'/><input type='Submit' value='Download Report' class='edit btn btn-primary btn-sm'/></form>";
                 return $btn;
             })->rawColumns(['action'])
             ->make(true);
@@ -172,6 +184,24 @@ class OrderController extends Controller
     public function export_building_summary(Request $request)
     {
         $Building_Name=$request->get('building');
+        $f_s_date = $request->input('start');
+        $f_e_date = $request->input('end');
+
+        if(isset($f_s_date ) && $f_s_date != null){
+            
+        $data = Orders::select('Item_Name','Tower','House_No', 'Phone_Billing',
+            'First_Name_Billing','Last_Name_Billing',
+            \DB::raw('SUM(Quantity*Item_Cost) as items_cost'),
+            \DB::raw('SUM(Quantity) as items'))->where('Building_Name',$Building_Name)
+            ->whereBetween('Order_Date', [$request->get('start'), $request->get('end')])
+            ->groupBy(['Item_Name','Tower','House_No','Phone_Billing','First_Name_Billing','Last_Name_Billing'])->get();
+
+        $distinct_rooms = Orders::select('Building_Name','Tower','House_No', \DB::raw('concat(First_Name_Billing," ",Last_Name_Billing) as name'),'Phone_Billing'
+            )->where('Building_Name',$Building_Name)
+        ->whereBetween('Order_Date', [$request->get('start'), $request->get('end')])
+        ->distinct()->get()->toArray();
+    }else
+    {
         $data = Orders::select('Item_Name','Tower','House_No', 'Phone_Billing',
             'First_Name_Billing','Last_Name_Billing',
             \DB::raw('SUM(Quantity*Item_Cost) as items_cost'),
@@ -179,7 +209,9 @@ class OrderController extends Controller
             ->groupBy(['Item_Name','Tower','House_No','Phone_Billing','First_Name_Billing','Last_Name_Billing'])->get();
 
         $distinct_rooms = Orders::select('Building_Name','Tower','House_No', \DB::raw('concat(First_Name_Billing," ",Last_Name_Billing) as name'),'Phone_Billing'
-            )->where('Building_Name',$Building_Name)->distinct()->get()->toArray();
+            )->where('Building_Name',$Building_Name)
+        ->distinct()->get()->toArray();
+    }
         $final_data = [];
         $transpose_data=[];
         $keys=['Building_Name','Tower','House_No','Name','Phone_Billing'];
@@ -197,34 +229,22 @@ class OrderController extends Controller
         $keys[]='Amount';
         $keys[]='Remarks';
 
-        //print_r($transpose_data);
-        //die();
         foreach($distinct_rooms as $rooms => $room)
         {
-            //print_r($room);
             $amount=0;
             $arr_column_key=$room['Tower'].'-'.$room['House_No'].'-'.$room['name']
                 .'-'.$room['Phone_Billing'];
-                // echo $arr_column_key.'</br>';
-                // print_r($transpose_data[$arr_column_key]);
             foreach ($product_keys as $arr_key){
                 $room[$arr_key]=null;
             }
             foreach ($transpose_data[$arr_column_key] as $key => $value) {
-            // echo $key;
-            // print_r($value);
-            // foreach ($value as $key1 => $value1){
+
                  $room[$key]=$value['quantity'];
                  $amount += $value['Amount'];
-            // }
-
             }
             $room['Amount']=$amount;
             $final_data[]=$room;
         }
-         // print_r($final_data);
-         // die();
-        // $final_data=$distinct_rooms;
 
         return Excel::download(new OrdersExport(array_prepend($final_data, $keys)), $Building_Name.'_order_summary.xlsx');
     }
